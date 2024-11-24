@@ -109,7 +109,7 @@ func calculate_lighting(normal: Vector3, light_position: Vector3, point: F.Point
 	point.translate(world_center.x, world_center.y, world_center.z)
 	var light_dir = (light_position - point.get_vec3d()).normalized()
 	var intensity = normal.normalized().dot(light_dir)
-	return intensity
+	return max(intensity, 0.0)
 
 
 func draw_by_faces(obj: F.Spatial, color: Color):
@@ -117,19 +117,22 @@ func draw_by_faces(obj: F.Spatial, color: Color):
 		var points = []
 		var zarray = []
 		var colors = []
+		var normals = []
+		
 		for point in face:
 			var to_insert = obj.points[point].duplicate()
 			zarray.append(to_insert.z)
 			to_insert.apply_matrix(F.AffineMatrices.get_mvp_matrix(world_center, camera_position, camera_target, c))
 			var intensity = calculate_lighting(obj.point_normals[point].get_vec3d(), light_source_position, obj.points[point].duplicate())
-			points.append(to_insert.get_vec2d())
+			points.append(to_insert.get_vec3d())
 			var lit_color = color * intensity
 			lit_color.a = 1
+			normals.append(obj.point_normals[point].get_vec3d())
 			colors.append(lit_color)
-		rasterize(points, colors, zarray)
+		rasterize(points, colors, zarray, normals)
 		#draw_polyline(points, Color.BLACK)
 
-func rasterize(points, colors, zarray):
+func rasterize(points, colors, zarray, normals):
 	var window_width = get_window().size.x
 	var window_height = get_window().size.y
 	var min_x = int(floor(max(0, min(points[0].x, points[1].x, points[2].x))))
@@ -158,6 +161,20 @@ func rasterize(points, colors, zarray):
 				var index = y * window_width + x
 				if 1e-6 < sgn * (interpolated_z - z_buffer[index]):
 					z_buffer[index] = interpolated_z
+					
+					var interpolated_normal = normals[0] * lambda1 + normals[1] * lambda2 + normals[2] * lambda3
+					var interpolated_point = points[0] * lambda1 + points[1] * lambda2 + points[2] * lambda3
+					var pp = F.Point.new(interpolated_point.x, interpolated_point.y, interpolated_point.z)
+					
+					var intensity = calculate_lighting(interpolated_normal, light_source_position, pp) + 0.2
+					
+					if (intensity < 0.4):
+						interpolated_color = interpolated_color * intensity * 0.3
+					elif (intensity < 0.4):
+						interpolated_color = interpolated_color * intensity
+					else:
+						interpolated_color = interpolated_color * intensity * 1.3
+					interpolated_color.a = 1
 					draw_primitive([p], [interpolated_color], [Vector2(0, 0)])
 
 
