@@ -251,7 +251,7 @@ class Spatial:
 	func apply_matrix(matrix: DenseMatrix):
 		for i in range(points.size()):
 			points[i].apply_matrix(matrix)
-			point_normals[i].apply_matrix(matrix)
+			#point_normals[i].apply_matrix(matrix)
 		mid_point.apply_matrix(matrix)
 
 	func translate(tx: float, ty: float, tz: float):

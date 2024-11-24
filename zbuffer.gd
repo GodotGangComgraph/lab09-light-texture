@@ -45,7 +45,7 @@ var camera_position = Vector3(100, 100, 100)
 var camera_target = Vector3(0, 0, 0)
 var camera_speed = 40
 
-var light_source_position = Vector3(100, 100, 100)
+var light_source_position = Vector3(300, 300, 0)
 
 var z_buffer = []
 
@@ -123,9 +123,9 @@ func draw_by_faces(obj: F.Spatial, color: Color):
 			to_insert.apply_matrix(F.AffineMatrices.get_mvp_matrix(world_center, camera_position, camera_target, c))
 			var intensity = calculate_lighting(obj.point_normals[point].get_vec3d(), light_source_position, obj.points[point].duplicate())
 			points.append(to_insert.get_vec2d())
-			color *= intensity
-			color.a = 1
-			colors.append(color)
+			var lit_color = color * intensity
+			lit_color.a = 1
+			colors.append(lit_color)
 		rasterize(points, colors, zarray)
 		#draw_polyline(points, Color.BLACK)
 
