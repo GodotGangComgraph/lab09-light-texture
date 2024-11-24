@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://ccmr2n2ugr6gh"]
+[gd_scene load_steps=3 format=3 uid="uid://bqkqtfjwnny7u"]
 
 [ext_resource type="Script" path="res://zbuffer.gd" id="1_0ufbl"]
+[ext_resource type="PackedScene" uid="uid://b03rirtespbhc" path="res://line_edit.tscn" id="2_6vbxl"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -46,6 +47,18 @@ text = "TRANSLATION
 "
 horizontal_alignment = 1
 
+[node name="dx" parent="VBoxContainer/HBoxContainer/Menu/Translate" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "dx"
+
+[node name="dy" parent="VBoxContainer/HBoxContainer/Menu/Translate" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "dy"
+
+[node name="dz" parent="VBoxContainer/HBoxContainer/Menu/Translate" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "dz"
+
 [node name="ApplyTrans" type="Button" parent="VBoxContainer/HBoxContainer/Menu/Translate"]
 layout_mode = 2
 text = "APPLY"
@@ -59,6 +72,18 @@ layout_mode = 2
 text = "ROTATION
 "
 horizontal_alignment = 1
+
+[node name="ox" parent="VBoxContainer/HBoxContainer/Menu/Rotate" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "Ox"
+
+[node name="oy" parent="VBoxContainer/HBoxContainer/Menu/Rotate" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "Oy"
+
+[node name="oz" parent="VBoxContainer/HBoxContainer/Menu/Rotate" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "Oz"
 
 [node name="ApplyRotate" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/Menu"]
 layout_mode = 2
@@ -79,6 +104,18 @@ custom_minimum_size = Vector2(125, 0)
 layout_mode = 2
 text = "SCALE"
 horizontal_alignment = 1
+
+[node name="mx" parent="VBoxContainer/HBoxContainer/Menu/Scale" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "Ox"
+
+[node name="my" parent="VBoxContainer/HBoxContainer/Menu/Scale" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "Oy"
+
+[node name="mz" parent="VBoxContainer/HBoxContainer/Menu/Scale" instance=ExtResource("2_6vbxl")]
+layout_mode = 2
+placeholder_text = "Oz"
 
 [node name="ApplyScale" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/Menu"]
 layout_mode = 2
