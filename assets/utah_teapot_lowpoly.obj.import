@@ -1,0 +1,22 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cqv1fpfj0p2pj"
+path="res://.godot/imported/utah_teapot_lowpoly.obj-d4d1c45c33f874ecb0542b638eb3c596.mesh"
+
+[deps]
+
+files=["res://.godot/imported/utah_teapot_lowpoly.obj-d4d1c45c33f874ecb0542b638eb3c596.mesh"]
+
+source_file="res://assets/utah_teapot_lowpoly.obj"
+dest_files=["res://.godot/imported/utah_teapot_lowpoly.obj-d4d1c45c33f874ecb0542b638eb3c596.mesh", "res://.godot/imported/utah_teapot_lowpoly.obj-d4d1c45c33f874ecb0542b638eb3c596.mesh"]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+optimize_mesh=true
+force_disable_mesh_compression=false
