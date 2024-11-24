@@ -251,7 +251,6 @@ class Spatial:
 	func apply_matrix(matrix: DenseMatrix):
 		for i in range(points.size()):
 			points[i].apply_matrix(matrix)
-			#point_normals[i].apply_matrix(matrix)
 		mid_point.apply_matrix(matrix)
 
 	func translate(tx: float, ty: float, tz: float):
@@ -261,14 +260,20 @@ class Spatial:
 	func rotation_about_x(ox: float):
 		var matrix: DenseMatrix = AffineMatrices.get_rotation_matrix_about_x(ox)
 		apply_matrix(matrix)
+		for i in range(point_normals.size()):
+			point_normals[i].apply_matrix(matrix)
 
 	func rotation_about_y(oy: float):
 		var matrix: DenseMatrix = AffineMatrices.get_rotation_matrix_about_y(oy)
 		apply_matrix(matrix)
+		for i in range(point_normals.size()):
+			point_normals[i].apply_matrix(matrix)
 
 	func rotation_about_z(oz: float):
 		var matrix: DenseMatrix = AffineMatrices.get_rotation_matrix_about_z(oz)
 		apply_matrix(matrix)
+		for i in range(point_normals.size()):
+			point_normals[i].apply_matrix(matrix)
 
 	func rotation_about_center(p: Point, ox: float, oy: float, oz: float):
 		translate(-p.x, -p.y, -p.z)
@@ -276,17 +281,6 @@ class Spatial:
 		rotation_about_y(float(oy))
 		rotation_about_z(float(oz))
 		translate(p.x, p.y, p.z)
-
-	func rotation_about_line(p: Point, vec: Vector3, deg: float):
-		deg = deg_to_rad(deg)
-		vec = vec.normalized()
-		
-		var n = vec.z
-		var m = vec.y
-		var l = vec.x
-		var d = sqrt(m * m + n * n)
-		var matrix = AffineMatrices.get_line_rotate_matrix(l, m, n, sin(deg), cos(deg))
-		apply_matrix(matrix)
 
 	func scale_about_center(p: Point, ox: float, oy: float, oz: float):
 		translate(-p.x, -p.y, -p.z)
@@ -296,14 +290,7 @@ class Spatial:
 	func scale_(mx: float, my: float, mz: float):
 		var matrix: DenseMatrix = AffineMatrices.get_scale_matrix(mx, my, mz)
 		apply_matrix(matrix)
-
-	func miror(mx: float, my: float, mz: float):
-		var matrix = DenseMatrix.identity(4)
-		matrix.set_element(0, 0, mx)
-		matrix.set_element(1, 1, my)
-		matrix.set_element(2, 2, mz)
-		apply_matrix(matrix)
-
+			
 	func load_from_obj(file_path: String):
 		var file = FileAccess.open(file_path, FileAccess.READ)
 		if file == null:
@@ -315,8 +302,8 @@ class Spatial:
 				var parts = line.split(" ")
 				if parts.size() >= 4:
 					var x = parts[1].to_float()
-					var y = parts[2].to_float()
-					var z = parts[3].to_float()
+					var y = -parts[2].to_float()
+					var z = -parts[3].to_float()
 					add_point(Point.new(x,y,z))
 			elif line.begins_with("f "):
 				var parts = line.split(" ")
@@ -329,8 +316,8 @@ class Spatial:
 				var parts = line.split(" ")
 				if parts.size() >= 4:
 					var x = parts[1].to_float()
-					var y = parts[2].to_float()
-					var z = parts[3].to_float()
+					var y = -parts[2].to_float()
+					var z = -parts[3].to_float()
 					point_normals.append(Point.new(x,y,z))
 		calculate_normals()
 		triangulate_faces()

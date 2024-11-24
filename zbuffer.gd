@@ -152,7 +152,6 @@ func rasterize(points, colors, zarray):
 
 			if lambda1 >= 0.0 and lambda2 >= 0.0 and lambda3 >= 0.0:
 				var interpolated_color = colors[0] * lambda1 + colors[1] * lambda2 + colors[2] * lambda3
-				
 				var interpolated_z = zarray[0] * lambda1 + zarray[1] * lambda2 + zarray[2] * lambda3
 				#var depth = view_vector.dot(Vector3(x, y, interpolated_z)-camera_position)
 				var sgn = 1 if is_facing_z else -1
