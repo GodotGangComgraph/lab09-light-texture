@@ -45,7 +45,7 @@ var camera_position = Vector3(100, 100, 100)
 var camera_target = Vector3(0, 0, 0)
 var camera_speed = 40
 
-var light_source_position = Vector3(200, 200, -100)
+var light_source_position = Vector3(100, 100, 100)
 
 var z_buffer = []
 
@@ -104,6 +104,14 @@ func _draw() -> void:
 		spatials[i].remove_back_faces(view_vector)
 		draw_by_faces(spatials[i], spatials[i].color)
 
+
+func calculate_lighting(normal: Vector3, light_position: Vector3, point: F.Point) -> float:
+	point.translate(world_center.x, world_center.y, world_center.z)
+	var light_dir = (light_position - point.get_vec3d()).normalized()
+	var intensity = normal.normalized().dot(light_dir)
+	return intensity
+
+
 func draw_by_faces(obj: F.Spatial, color: Color):
 	for face in obj.visible_faces:
 		var points = []
@@ -113,7 +121,10 @@ func draw_by_faces(obj: F.Spatial, color: Color):
 			var to_insert = obj.points[point].duplicate()
 			zarray.append(to_insert.z)
 			to_insert.apply_matrix(F.AffineMatrices.get_mvp_matrix(world_center, camera_position, camera_target, c))
+			var intensity = calculate_lighting(obj.point_normals[point].get_vec3d(), light_source_position, obj.points[point].duplicate())
 			points.append(to_insert.get_vec2d())
+			color *= intensity
+			color.a = 1
 			colors.append(color)
 		rasterize(points, colors, zarray)
 		#draw_polyline(points, Color.BLACK)
@@ -141,7 +152,7 @@ func rasterize(points, colors, zarray):
 
 			if lambda1 >= 0.0 and lambda2 >= 0.0 and lambda3 >= 0.0:
 				var interpolated_color = colors[0] * lambda1 + colors[1] * lambda2 + colors[2] * lambda3
-
+				
 				var interpolated_z = zarray[0] * lambda1 + zarray[1] * lambda2 + zarray[2] * lambda3
 				#var depth = view_vector.dot(Vector3(x, y, interpolated_z)-camera_position)
 				var sgn = 1 if is_facing_z else -1

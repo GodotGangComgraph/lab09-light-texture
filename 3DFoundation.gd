@@ -315,8 +315,8 @@ class Spatial:
 				var parts = line.split(" ")
 				if parts.size() >= 4:
 					var x = parts[1].to_float()
-					var y = -parts[2].to_float()
-					var z = -parts[3].to_float()
+					var y = parts[2].to_float()
+					var z = parts[3].to_float()
 					add_point(Point.new(x,y,z))
 			elif line.begins_with("f "):
 				var parts = line.split(" ")
@@ -329,8 +329,8 @@ class Spatial:
 				var parts = line.split(" ")
 				if parts.size() >= 4:
 					var x = parts[1].to_float()
-					var y = -parts[2].to_float()
-					var z = -parts[3].to_float()
+					var y = parts[2].to_float()
+					var z = parts[3].to_float()
 					point_normals.append(Point.new(x,y,z))
 		calculate_normals()
 		triangulate_faces()

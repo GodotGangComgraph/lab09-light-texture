@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://bqkqtfjwnny7u"]
+[gd_scene load_steps=3 format=3 uid="uid://ccmr2n2ugr6gh"]
 
 [ext_resource type="Script" path="res://zbuffer.gd" id="1_0ufbl"]
 [ext_resource type="PackedScene" uid="uid://b03rirtespbhc" path="res://line_edit.tscn" id="2_6vbxl"]
@@ -137,6 +137,7 @@ layout_mode = 2
 text = "LOAD FILE"
 
 [node name="Create" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 text = "CREATE"
