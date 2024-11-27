@@ -55,6 +55,7 @@ var last_mouse_position = Vector2.ZERO
 # Sensitivity for rotation speed
 @export var rotation_sensitivity := 0.05
 
+var texture: Image
 
 func reset_z_buffer(sgn):
 	z_buffer.clear()
@@ -64,7 +65,9 @@ func reset_z_buffer(sgn):
 func _ready():
 	#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	axis.translate(world_center.x, world_center.y, world_center.z)
-
+	
+	texture = Image.load_from_file("res://assets/texture2.png")
+	
 	queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -118,21 +121,25 @@ func draw_by_faces(obj: F.Spatial, color: Color):
 		var zarray = []
 		var colors = []
 		var normals = []
+		var uv_coords = []
 		
 		for point in face:
 			var to_insert = obj.points[point].duplicate()
 			zarray.append(to_insert.z)
 			to_insert.apply_matrix(F.AffineMatrices.get_mvp_matrix(world_center, camera_position, camera_target, c))
-			var intensity = calculate_lighting(obj.point_normals[point].get_vec3d(), light_source_position, obj.points[point].duplicate())
+			#var intensity = calculate_lighting(obj.point_normals[point].get_vec3d(), light_source_position, obj.points[point].duplicate())
+			var intensity = calculate_lighting(obj.point_normals[obj.point_normals_dict[point]].get_vec3d(), light_source_position, obj.points[point].duplicate())
 			points.append(to_insert.get_vec3d())
 			var lit_color = color * intensity
 			lit_color.a = 1
-			normals.append(obj.point_normals[point].get_vec3d())
+			#normals.append(obj.point_normals[point].get_vec3d())
+			normals.append(obj.point_normals[obj.point_normals_dict[point]].get_vec3d())
+			uv_coords.append(obj.uv_coords[obj.uv_coords_dict[point]])
 			colors.append(lit_color)
-		rasterize(points, colors, zarray, normals)
+		rasterize(points, colors, zarray, normals, uv_coords)
 		#draw_polyline(points, Color.BLACK)
 
-func rasterize(points, colors, zarray, normals):
+func rasterize(points, colors, zarray, normals, uv_coords):
 	var window_width = get_window().size.x
 	var window_height = get_window().size.y
 	var min_x = int(floor(max(0, min(points[0].x, points[1].x, points[2].x))))
@@ -154,7 +161,10 @@ func rasterize(points, colors, zarray, normals):
 			var lambda3 = 1.0 - lambda1 - lambda2
 
 			if lambda1 >= 0.0 and lambda2 >= 0.0 and lambda3 >= 0.0:
-				var interpolated_color = colors[0] * lambda1 + colors[1] * lambda2 + colors[2] * lambda3
+				var interpolated_uv = uv_coords[0] * lambda1 + uv_coords[1] * lambda2 + uv_coords[2] * lambda3
+				#var interpolated_color = colors[0] * lambda1 + colors[1] * lambda2 + colors[2] * lambda3
+				var interpolated_color = texture.get_pixelv(interpolated_uv * Vector2(texture.get_size()))
+				
 				var interpolated_z = zarray[0] * lambda1 + zarray[1] * lambda2 + zarray[2] * lambda3
 				#var depth = view_vector.dot(Vector3(x, y, interpolated_z)-camera_position)
 				var sgn = 1 if is_facing_z else -1
