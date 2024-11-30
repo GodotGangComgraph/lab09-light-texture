@@ -214,17 +214,27 @@ class Point:
 class Spatial:
 	var points: Array[Point]
 	var point_normals: Array[Point]
+	var point_normals_dict: Dictionary
 	var mid_point: Point = Point.new(0, 0, 0)
 	var faces #Array[Array[int]]
 	var visible_faces
 	var normals: Array[Vector3]
 	var color: Color
-	func _init() -> void:
+	var uv_coords: Array[Vector2]
+	var uv_coords_dict: Dictionary
+	var texture: Image
+	
+	func _init(c: Color, t: Image) -> void:
 		points = []
 		point_normals = []
+		point_normals_dict = {}
 		faces = []
 		visible_faces = []
-		color = Color.DARK_ORANGE
+		uv_coords = []
+		uv_coords_dict = {}
+		color = c
+		texture = t
+		
 	func add_point(p: Point):
 		points.append(p)
 
@@ -310,6 +320,10 @@ class Spatial:
 				var face_indices = []
 				for i in range(1, parts.size()):
 					var vertex_index = parts[i].split("/")[0].to_int() - 1
+					var vertex_texture_index = parts[i].split("/")[1].to_int() - 1
+					var vertex_normal_index = parts[i].split("/")[2].to_int() - 1
+					point_normals_dict[vertex_index] = vertex_normal_index
+					uv_coords_dict[vertex_index] = vertex_texture_index
 					face_indices.append(vertex_index)
 				add_face(face_indices)
 			elif line.begins_with("vn "):
@@ -319,6 +333,12 @@ class Spatial:
 					var y = -parts[2].to_float()
 					var z = -parts[3].to_float()
 					point_normals.append(Point.new(x,y,z))
+			elif line.begins_with("vt "):
+				var parts = line.split(" ")
+				if parts.size() >= 3:
+					var u = parts[1].to_float()
+					var v = parts[2].to_float()
+					uv_coords.append(Vector2(u, v))
 		calculate_normals()
 		triangulate_faces()
 		scale_about_center(mid_point, 128, 128, 128)
