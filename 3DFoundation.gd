@@ -222,8 +222,9 @@ class Spatial:
 	var color: Color
 	var uv_coords: Array[Vector2]
 	var uv_coords_dict: Dictionary
+	var texture: Image
 	
-	func _init() -> void:
+	func _init(c: Color, t: Image) -> void:
 		points = []
 		point_normals = []
 		point_normals_dict = {}
@@ -231,7 +232,8 @@ class Spatial:
 		visible_faces = []
 		uv_coords = []
 		uv_coords_dict = {}
-		color = Color.DARK_ORANGE
+		color = c
+		texture = t
 		
 	func add_point(p: Point):
 		points.append(p)

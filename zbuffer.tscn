@@ -136,12 +136,6 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "LOAD FILE"
 
-[node name="Create" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-text = "CREATE"
-
 [node name="ObjectList" type="OptionButton" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -156,9 +150,47 @@ access = 2
 filters = PackedStringArray("*.obj")
 use_native_dialog = true
 
+[node name="LoadTextureDialog" type="FileDialog" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+auto_translate_mode = 1
+title = "Open a File"
+size = Vector2i(303, 180)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png", "*.jpg", "*.jpeg")
+use_native_dialog = true
+
 [node name="CheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 text = "AUTO ROTATE"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+color = Color(1, 0.486275, 0, 1)
+
+[node name="LoadTexture" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "LOAD TEXTURE"
+
+[node name="Mode" type="OptionButton" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "GOURAUD"
+popup/item_1/text = "PHONG"
+popup/item_1/id = 1
+popup/item_2/text = "TEXTURE"
+popup/item_2/id = 2
 
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/Menu/Clear" to="." method="_on_clear_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/Menu/Translate/ApplyTrans" to="." method="_on_apply_trans_pressed"]
@@ -167,6 +199,9 @@ text = "AUTO ROTATE"
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/Menu/ApplyScale/ApplyScale" to="." method="_on_apply_scale_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/Menu/ApplyScale/ApplyScaleCenter" to="." method="_on_apply_scale_center_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/VBoxContainer/Load" to="." method="_on_load_pressed"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/VBoxContainer/Create" to="." method="_on_create_pressed"]
 [connection signal="item_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/ObjectList" to="." method="_on_object_list_item_selected"]
 [connection signal="file_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/LoadFileDialog" to="." method="_on_load_file_dialog_file_selected"]
+[connection signal="file_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/LoadTextureDialog" to="." method="_on_load_texture_dialog_file_selected"]
+[connection signal="popup_closed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/ColorPickerButton" to="." method="_on_color_picker_button_popup_closed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/LoadTexture" to="." method="_on_load_texture_pressed"]
+[connection signal="item_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/Mode" to="." method="_on_mode_item_selected"]

@@ -11,6 +11,13 @@ var color_names = ["RED", "GREEN", "BLUE", "AQUAMARINE", "BLUE VIOLET"]
 var spatial_names = ["CUBE", "TETRAHEDRON"]
 var axis = F.Axis.new()
 
+enum MODES { GOURAUD, PHONG, TEXTURE }
+var current_mode: MODES = 0
+@onready var color_picker_button: ColorPickerButton = $VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/ColorPickerButton
+@onready var mode: OptionButton = $VBoxContainer/HBoxContainer/VBoxContainer/Mode
+
+
+
 var c = 100
 var projection_matrix = F.AffineMatrices.get_perspective_matrix(c)
 var view_vector: Vector3 = Vector3.ZERO
@@ -55,7 +62,7 @@ var last_mouse_position = Vector2.ZERO
 # Sensitivity for rotation speed
 @export var rotation_sensitivity := 0.05
 
-var texture: Image
+var base_texture: Image
 
 func reset_z_buffer(sgn):
 	z_buffer.clear()
@@ -66,7 +73,7 @@ func _ready():
 	#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	axis.translate(world_center.x, world_center.y, world_center.z)
 	
-	texture = Image.load_from_file("res://assets/texture2.png")
+	base_texture = Image.load_from_file("res://assets/texture2.png")
 	
 	queue_redraw()
 
@@ -136,10 +143,61 @@ func draw_by_faces(obj: F.Spatial, color: Color):
 			normals.append(obj.point_normals[obj.point_normals_dict[point]].get_vec3d())
 			uv_coords.append(obj.uv_coords[obj.uv_coords_dict[point]])
 			colors.append(lit_color)
-		rasterize(points, colors, zarray, normals, uv_coords)
+		rasterize(points, colors, zarray, normals, uv_coords, obj.color, obj.texture)
 		#draw_polyline(points, Color.BLACK)
 
-func rasterize(points, colors, zarray, normals, uv_coords):
+func rasterize(points, colors, zarray, normals, uv_coords, global_color, texture):
+	var window_width = get_window().size.x
+	var window_height = get_window().size.y
+	var min_x = int(floor(max(0, min(points[0].x, points[1].x, points[2].x))))
+	var max_x = int(ceil(min(window_width, max(points[0].x, points[1].x, points[2].x))))
+	var min_y = int(floor(max(0, min(points[0].y, points[1].y, points[2].y))))
+	var max_y = int(ceil(min(window_height, max(points[0].y, points[1].y, points[2].y))))
+	var denom = ((points[1].y - points[2].y) \
+			* (points[0].x - points[2].x) + (points[2].x - points[1].x) * (points[0].y - points[2].y))
+	var inv_denom = 1.0 / denom
+	for y in range(min_y, max_y):
+		for x in range(min_x, max_x):
+			var p = Vector2(x, y)
+
+			var lambda1 = ((points[1].y - points[2].y) * (p.x - points[2].x) \
+			+ (points[2].x - points[1].x) * (p.y - points[2].y)) * inv_denom
+
+			var lambda2 = ((points[2].y - points[0].y) * (p.x - points[2].x) \
+			+ (points[0].x - points[2].x) * (p.y - points[2].y)) * inv_denom
+			var lambda3 = 1.0 - lambda1 - lambda2
+
+			if lambda1 >= 0.0 and lambda2 >= 0.0 and lambda3 >= 0.0:
+				var interpolated_color = global_color
+				if current_mode == MODES.GOURAUD:
+					interpolated_color = colors[0] * lambda1 + colors[1] * lambda2 + colors[2] * lambda3
+				if current_mode == MODES.TEXTURE:
+					var interpolated_uv = uv_coords[0] * lambda1 + uv_coords[1] * lambda2 + uv_coords[2] * lambda3
+					interpolated_color = texture.get_pixelv(interpolated_uv * Vector2(texture.get_size()))
+				#var interpolated_color = colors[0] * lambda1 + colors[1] * lambda2 + colors[2] * lambda3
+				
+				## Z-BUFFER
+				var interpolated_z = zarray[0] * lambda1 + zarray[1] * lambda2 + zarray[2] * lambda3
+				var depth = view_vector.dot(Vector3(x, y, interpolated_z)-camera_position)
+				var sgn = 1 if is_facing_z else -1
+				var index = y * window_width + x
+				if 1e-6 < sgn * (interpolated_z - z_buffer[index]):
+					z_buffer[index] = interpolated_z
+					if current_mode == MODES.PHONG:
+						var interpolated_normal = normals[0] * lambda1 + normals[1] * lambda2 + normals[2] * lambda3
+						var interpolated_point = points[0] * lambda1 + points[1] * lambda2 + points[2] * lambda3
+						var pp = F.Point.new(interpolated_point.x, interpolated_point.y, interpolated_point.z)
+						var intensity = calculate_lighting(interpolated_normal, light_source_position, pp) + 0.2
+						if (intensity < 0.4):
+							interpolated_color = interpolated_color * intensity * 0.3
+						elif (intensity < 0.4):
+							interpolated_color = interpolated_color * intensity
+						else:
+							interpolated_color = interpolated_color * intensity * 1.3
+						interpolated_color.a = 1
+					draw_primitive([p], [interpolated_color], [Vector2(0, 0)])
+
+func rasterize_with_texture(points, colors, zarray, normals, uv_coords):
 	var window_width = get_window().size.x
 	var window_height = get_window().size.y
 	var min_x = int(floor(max(0, min(points[0].x, points[1].x, points[2].x))))
@@ -163,8 +221,8 @@ func rasterize(points, colors, zarray, normals, uv_coords):
 			if lambda1 >= 0.0 and lambda2 >= 0.0 and lambda3 >= 0.0:
 				var interpolated_uv = uv_coords[0] * lambda1 + uv_coords[1] * lambda2 + uv_coords[2] * lambda3
 				#var interpolated_color = colors[0] * lambda1 + colors[1] * lambda2 + colors[2] * lambda3
-				var interpolated_color = texture.get_pixelv(interpolated_uv * Vector2(texture.get_size()))
-				
+				#var interpolated_color = texture.get_pixelv(interpolated_uv * Vector2(texture.get_size()))
+				var interpolated_color = Color.DARK_ORANGE
 				var interpolated_z = zarray[0] * lambda1 + zarray[1] * lambda2 + zarray[2] * lambda3
 				#var depth = view_vector.dot(Vector3(x, y, interpolated_z)-camera_position)
 				var sgn = 1 if is_facing_z else -1
@@ -186,7 +244,6 @@ func rasterize(points, colors, zarray, normals, uv_coords):
 						interpolated_color = interpolated_color * intensity * 1.3
 					interpolated_color.a = 1
 					draw_primitive([p], [interpolated_color], [Vector2(0, 0)])
-
 
 func draw_axes():
 	var colors_axes = [Color.RED, Color.GREEN, Color.BLUE]
@@ -270,11 +327,30 @@ func _on_load_pressed() -> void:
 	load_file_dialog.show()
 
 func _on_load_file_dialog_file_selected(path: String) -> void:
-	var spatial = F.Spatial.new()
+	var spatial = F.Spatial.new(color_picker_button.color, base_texture)
 	spatial.load_from_obj(path)
 	spatial.translate(world_center.x, world_center.y, world_center.z)
 	spatials.append(spatial)
 	var color_index = randi() % available_colors.size()
 	colors.append(available_colors[color_index])
 	object_list.add_item(path.get_file() + ' ' + color_names[color_index])
+	queue_redraw()
+
+
+func _on_mode_item_selected(index: int) -> void:
+	current_mode = index
+	queue_redraw()
+
+
+func _on_color_picker_button_popup_closed() -> void:
+	spatials[spatial_index].color = color_picker_button.color
+	queue_redraw()
+
+@onready var load_texture_dialog: FileDialog = $VBoxContainer/HBoxContainer/VBoxContainer/LoadTextureDialog
+func _on_load_texture_pressed() -> void:
+	load_texture_dialog.show()
+
+
+func _on_load_texture_dialog_file_selected(path: String) -> void:
+	spatials[spatial_index].texture = Image.load_from_file(path)
 	queue_redraw()
