@@ -183,7 +183,7 @@ func rasterize(points, colors, zarray, normals, uv_coords, global_color, texture
 				var index = y * window_width + x
 				if 1e-6 < sgn * (interpolated_z - z_buffer[index]):
 					z_buffer[index] = interpolated_z
-					if current_mode == MODES.PHONG:
+					if current_mode != MODES.GOURAUD:
 						var interpolated_normal = normals[0] * lambda1 + normals[1] * lambda2 + normals[2] * lambda3
 						var interpolated_point = points[0] * lambda1 + points[1] * lambda2 + points[2] * lambda3
 						var pp = F.Point.new(interpolated_point.x, interpolated_point.y, interpolated_point.z)
