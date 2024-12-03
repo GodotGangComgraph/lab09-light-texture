@@ -189,11 +189,11 @@ func rasterize(points, colors, zarray, normals, uv_coords, global_color, texture
 						var pp = F.Point.new(interpolated_point.x, interpolated_point.y, interpolated_point.z)
 						var intensity = calculate_lighting(interpolated_normal, light_source_position, pp) + 0.2
 						if (intensity < 0.4):
-							interpolated_color = interpolated_color * intensity * 0.3
+							interpolated_color = interpolated_color * 0.3
 						elif (intensity < 0.4):
-							interpolated_color = interpolated_color * intensity
+							interpolated_color = interpolated_color
 						else:
-							interpolated_color = interpolated_color * intensity * 1.3
+							interpolated_color = interpolated_color * 1.3
 						interpolated_color.a = 1
 					draw_primitive([p], [interpolated_color], [Vector2(0, 0)])
 
